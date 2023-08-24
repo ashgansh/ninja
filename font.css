@@ -1,0 +1,19 @@
+@font-face {
+  font-family: "Gotham";
+  src: url("./gotham-black.ttf") format("truetype");
+  /* Add additional src lines for other font formats if necessary */
+  /* Example: src: url("./fonts/gotham-black.woff") format("woff"); */
+  /* Example: src: url("./fonts/gotham-black.woff2") format("woff2"); */
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Inder";
+  src: url("./inder.ttf") format("truetype");
+  /* Add additional src lines for other font formats if necessary */
+  /* Example: src: url("./fonts/gotham-black.woff") format("woff"); */
+  /* Example: src: url("./fonts/gotham-black.woff2") format("woff2"); */
+  font-weight: normal;
+  font-style: normal;
+}

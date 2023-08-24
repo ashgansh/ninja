@@ -1,13 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 
 export const CardContainer = styled.div`
   position: relative;
+  padding: 1rem;
   width: 300px;
-  height: 400px;
+  height: auto;
   cursor: pointer;
   perspective: 1000px;
   transition: all 0.2s ease;
+  
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   border-radius: 15px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
@@ -30,6 +32,35 @@ export const CardContainer = styled.div`
     pointer-events: none;
   }
 `;
+// export const CardContainer = styled.div`
+//   position: relative;
+//   width: 300px;
+//   height: 400px;
+//   cursor: pointer;
+//   perspective: 1000px;
+//   transition: all 0.2s ease;
+//   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+//   border-radius: 15px;
+//   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+//   overflow: hidden;
+
+//   &.active {
+//     transform: scale(1.03);
+//     box-shadow: 0 10px 60px rgba(0, 0, 0, 0.3);
+//   }
+
+//   &:before {
+//     content: "";
+//     position: absolute;
+//     top: -50%;
+//     left: -50%;
+//     width: 200%;
+//     height: 200%;
+//     background: url(glare.png);
+//     transform: rotate(30deg);
+//     pointer-events: none;
+//   }
+// `;
 
 export const Glare = styled.div`
   position: absolute;
@@ -43,67 +74,60 @@ export const Glare = styled.div`
     transparent 50%
   );
   pointer-events: none;
+  transform: translate(${(props) => props.x}%, ${(props) => props.y}%);
+  opacity: ${(props) => props.o};
 `;
 
-const Card = () => {
+// 1. Import springs
+import { useSpring } from "react-spring";
+
+// 2. Clamp utility
+const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+
+
+const Card = ({ children }) => {
+  // 1. Create springs
+  const [rotate, rotateApi] = useSpring(() => ({ x: 0, y: 0 }));
+  const [glare, glareApi] = useSpring(() => ({ x: 50, y: 50, o: 0 }));
+
+  // 4. Manage active state
   const [active, setActive] = useState(false);
-  const [interacting, setInteracting] = useState(false);
-  const [rotate, setRotate] = useState({ x: 0, y: 0 });
-  const [glare, setGlare] = useState({ x: 50, y: 50, o: 0 });
-  const [background, setBackground] = useState({ x: 50, y: 50 });
 
-  const handleMouseDown = (e) => {
-    setActive(true);
-    setInteracting(true);
-  };
-
-  const handleMouseUp = (e) => {
-    setActive(false);
-    setInteracting(false);
-  };
+  // 5. Clear timeout on unmount
+  useEffect(() => {
+    return () => clearTimeout(timeout);
+  }, []);
 
   const handleMouseMove = (e) => {
-    if (interacting) {
-      if (e.buttons === 1) {
-        // Check if the left mouse button is pressed
-        setRotate({
-          x: -1 * ((e.clientY / window.innerHeight) * 100 - 50),
-          y: (e.clientX / window.innerWidth) * 100 - 50,
-        });
-        setGlare({
-          x: (e.clientX / window.innerWidth) * 100,
-          y: (e.clientY / window.innerHeight) * 100,
-          o: 0.5, // Increase the opacity for a more reflective glare
-        });
-        setBackground({
-          x: (e.clientX / window.innerWidth) * 100,
-          y: (e.clientY / window.innerHeight) * 100,
-        });
-      } else {
-        setInteracting(false); // Stop interacting if the mouse button is released
-      }
-    }
+    // Constrain values
+    const x = clamp((e.clientX / window.innerWidth) * 100, 0, 100);
+    const y = clamp((e.clientY / window.innerHeight) * 100, 0, 100);
+
+    // Center coordinates
+    const cx = x - 50;
+    const cy = y - 50;
+
+    // Scale for effects
+    const rx = -cx / 2;
+    const ry = cy / 5;
+
+    // Update springs
+    rotateApi.start({ x: rx, y: ry });
+    glareApi.start({ x, y, o: 0.5 });
   };
+
   return (
     <CardContainer
-      className={`card ${active ? "active" : ""}`}
+      className={active ? "active" : ""}
       onMouseMove={handleMouseMove}
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      onClick={handleMouseDown} // Add onClick event handler
-      style={{
-        // background: `yellow`,
-        transform: `rotateX(${rotate.x}deg) rotateY(${rotate.y}deg)`,
-        backgroundPosition: `${background.x}% ${background.y}%`,
-        boxShadow: `0 0 8px rgba(0,0,0,${glare.o}), 0 0 16px rgba(0,0,0,${glare.o})`,
-      }}
+      onMouseOut={() => setActive(false)} // 4. Stop interacting
+      aria-label="Pokemon Card" // 6. Accessibility
+      tabIndex="0" // 6. Make focusable
     >
-      <Glare
-        className="glare"
-        style={{
-          backgroundPosition: `${glare.x}% ${glare.y}%`,
-        }}
-      />
+      
+
+      <Glare o={glare.o} x={glare.x} y={glare.y} />
+      {children}
     </CardContainer>
   );
 };
