@@ -59,7 +59,7 @@ const StatItem = ({ value, label }) => {
         gap: 3,
         fontFamily: "inder",
         justifyContent: "space-between",
-        fontSize: "1.5rem",
+        fontSize: "1.3rem",
         // capitalize
       }}
     >
@@ -72,6 +72,7 @@ const StatItem = ({ value, label }) => {
 const Stats = () => {
   return (
     <div
+    className="bg-yellow"
       style={{
         display: "flex",
         width: "100%",
@@ -83,7 +84,9 @@ const Stats = () => {
         <StatItem value="1.4" label="s/f" />
         <StatItem value="v9" label="best" />
       </div>
-      <div style={{ fex: 1 }}>
+
+   
+      <div style={{ flex: 1, paddingLeft: "1rem" }}>
         <StatItem value="132" label="weight" />
         <StatItem value='5"7' label="height" />
         <StatItem value="+5" label="ape" />
@@ -96,7 +99,7 @@ const PersonPicture = () => {
   // add code to fetch picture
   return (
     <div style={{ width: "100%", position: "relative" }}>
-      <div style={{ marginLeft: "auto", maxWidth: "60%" }}>
+      <div style={{ marginLeft: "auto", maxWidth: "70%" }}>
         <img src={ClimberPic} alt="Person" width={"100%"} />
       </div>
     </div>
@@ -112,12 +115,24 @@ function App() {
     >
       <StyledDiv>
         <Card>
-          <MainScore />
-          <div style={{ width: "48px" }}>
-            <Flag />
+          <div style={{ display: "flex" }}>
+            <div>
+              <MainScore />
+              <div style={{ width: "48px" }}>
+                <Flag />
+              </div>
+            </div>
+            <PersonPicture />
           </div>
-          <PersonPicture />
-          <PersonName />
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <PersonName />
+          </div>
           <Stats />
         </Card>
       </StyledDiv>

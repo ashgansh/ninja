@@ -1,135 +1,149 @@
-import React, { useEffect, useState } from "react";
-import styled from "styled-components";
-
-export const CardContainer = styled.div`
-  position: relative;
-  padding: 1rem;
-  width: 300px;
-  height: auto;
-  cursor: pointer;
-  perspective: 1000px;
-  transition: all 0.2s ease;
-  
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-
-  &.active {
-    transform: scale(1.03);
-    box-shadow: 0 10px 60px rgba(0, 0, 0, 0.3);
-  }
-
-  &:before {
-    content: "";
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: url(glare.png);
-    transform: rotate(30deg);
-    pointer-events: none;
-  }
-`;
-// export const CardContainer = styled.div`
-//   position: relative;
-//   width: 300px;
-//   height: 400px;
-//   cursor: pointer;
-//   perspective: 1000px;
-//   transition: all 0.2s ease;
-//   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-//   border-radius: 15px;
-//   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-//   overflow: hidden;
-
-//   &.active {
-//     transform: scale(1.03);
-//     box-shadow: 0 10px 60px rgba(0, 0, 0, 0.3);
-//   }
-
-//   &:before {
-//     content: "";
-//     position: absolute;
-//     top: -50%;
-//     left: -50%;
-//     width: 200%;
-//     height: 200%;
-//     background: url(glare.png);
-//     transform: rotate(30deg);
-//     pointer-events: none;
-//   }
-// `;
-
-export const Glare = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.3) 0%,
-    transparent 50%
-  );
-  pointer-events: none;
-  transform: translate(${(props) => props.x}%, ${(props) => props.y}%);
-  opacity: ${(props) => props.o};
-`;
-
-// 1. Import springs
-import { useSpring } from "react-spring";
-
-// 2. Clamp utility
-const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
-
+import React, { useState, useRef } from "react";
+import { motion } from "framer-motion";
 
 const Card = ({ children }) => {
-  // 1. Create springs
-  const [rotate, rotateApi] = useSpring(() => ({ x: 0, y: 0 }));
-  const [glare, glareApi] = useSpring(() => ({ x: 50, y: 50, o: 0 }));
+  const [rotations, setRotations] = useState({ x: 0, y: 0, z: 0 });
+  const [isAnimating, setAnimating] = useState(false);
+  const isAnimatingReference = useRef(isAnimating);
+  const [glare, setGlare] = useState({ x: 0, y: 0, opacity: 0 });
+  // Put these anywhere you wish, I personally put them into a dedicated `utils` file.
+  function round(num, fix = 2) {
+    return parseFloat(num.toFixed(fix));
+  }
 
-  // 4. Manage active state
-  const [active, setActive] = useState(false);
+  function distance(x1, y1, x2, y2) {
+    return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+  }
 
-  // 5. Clear timeout on unmount
-  useEffect(() => {
-    return () => clearTimeout(timeout);
-  }, []);
+  const handleMouseMove = (event) => {
+    setAnimating(true); // We're animating the card.
 
-  const handleMouseMove = (e) => {
-    // Constrain values
-    const x = clamp((e.clientX / window.innerWidth) * 100, 0, 100);
-    const y = clamp((e.clientY / window.innerHeight) * 100, 0, 100);
+    // We're getting the bounding box of the card.
+    const rect = event.currentTarget.getBoundingClientRect();
 
-    // Center coordinates
-    const cx = x - 50;
-    const cy = y - 50;
+    // We're getting the mouse position relative to the card.
+    const absolute = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+    };
 
-    // Scale for effects
-    const rx = -cx / 2;
-    const ry = cy / 5;
+    // We're getting the mouse position relative to the center of the card,
+    // in percentage, starting from x, y 0% 0% top-left, ending in 100% 100% bottom-right.
+    const percent = {
+      x: round((100 / rect.width) * absolute.x),
+      y: round((100 / rect.height) * absolute.y),
+    };
 
-    // Update springs
-    rotateApi.start({ x: rx, y: ry });
-    glareApi.start({ x, y, o: 0.5 });
+    // We're getting the tilt angle of the card, calculated on the
+    // percentage of distance from the center, going from
+    // -50% to 0% to 50% left to right, top to bottom.
+    const center = {
+      x: percent.x - 50,
+      y: percent.y - 50,
+    };
+
+    // We can now set the tilt angle(s) of the card. Note that the
+    // divisions here (/ 12, / 16, / 20) are used to stabilize the
+    // rotations using smaller values. Play with them and experiment
+    // you perfect fine-tuning!
+    setRotations({
+      x: round(((center.x > 50 ? 1 : -1) * center.x) / 12),
+      y: round(center.y / 16),
+      z: round(distance(percent.x, percent.y, 50, 50) / 20),
+    });
+  };
+
+  const animate = (event) => {
+    setAnimating(true);
+
+    const rect = event.currentTarget.getBoundingClientRect();
+
+    const absolute = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+    };
+
+    const percent = {
+      x: round((100 / rect.width) * absolute.x),
+      y: round((100 / rect.height) * absolute.y),
+    };
+
+    const center = {
+      x: percent.x - 50,
+      y: percent.y - 50,
+    };
+
+    setRotations({
+      x: round(((center.x > 50 ? 1 : -1) * center.x) / 12),
+      y: round(center.y / 16),
+      z: round(distance(percent.x, percent.y, 50, 50) / 20),
+    });
+
+    setGlare({
+      x: percent.x,
+      y: percent.y,
+      opacity: 0.25,
+    });
+  };
+
+  const stopAnimating = () => {
+    setAnimating(false);
+
+    setTimeout(() => {
+      if (isAnimatingReference.current) return;
+
+      setRotations({ x: 0, y: 0, z: 2 });
+      setGlare({ x: 50, y: 50, opacity: 0 });
+    }, 100);
   };
 
   return (
-    <CardContainer
-      className={active ? "active" : ""}
-      onMouseMove={handleMouseMove}
-      onMouseOut={() => setActive(false)} // 4. Stop interacting
-      aria-label="Pokemon Card" // 6. Accessibility
-      tabIndex="0" // 6. Make focusable
+    <motion.div
+      onMouseMove={animate}
+      onMouseLeave={stopAnimating}
+      animate={{
+        rotateY: rotations.x,
+        rotateX: rotations.y,
+        transformPerspective: rotations.z * 100,
+      }}
+      style={{
+        // width: "240px",
+        // height: "320px",
+        backgroundColor: "#C2B8F0",
+        borderRadius: "0.5rem",
+        padding: '1rem',
+        boxShadow:
+          "0 0 0 1px rgba(0, 0, 0, 0.105), 0 9px 20px 0 rgba(0, 0, 0, 0.02), 0 1px 2px 0 rgba(0, 0, 0, 0.106)",
+        display: "flex",
+        ustifyContent: "center",
+        transformStyle: "preserve-3d",
+        transformOrigin: "center",
+        perspective: "320px",
+      }}
     >
-      
-
-      <Glare o={glare.o} x={glare.x} y={glare.y} />
-      {children}
-    </CardContainer>
+      <motion.div
+        style={{
+          zIndex: 2,
+          mixBlendMode: "overlay",
+          position: "absolute",
+          transform: "translateZ(1px)",
+          width: "100%",
+          height: "100%",
+          borderRadius: "0.5rem",
+          transformStyle: "preserve-3d",
+        }}
+        animate={{
+          background: `radial-gradient(
+              farthest-corner circle at ${glare.x}% ${glare.y}%,
+              rgba(255, 255, 255, 0.7) 10%,
+              rgba(255, 255, 255, 0.5) 24%,
+              rgba(0, 0, 0, 0.8) 82%
+            )`,
+          opacity: glare.opacity,
+        }}
+      />
+      <div>{children}</div>
+    </motion.div>
   );
 };
-
 export default Card;
