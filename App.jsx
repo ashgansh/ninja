@@ -72,7 +72,7 @@ const StatItem = ({ value, label }) => {
 const Stats = () => {
   return (
     <div
-    className="bg-yellow"
+      className="bg-yellow"
       style={{
         display: "flex",
         width: "100%",
@@ -85,7 +85,6 @@ const Stats = () => {
         <StatItem value="v9" label="best" />
       </div>
 
-   
       <div style={{ flex: 1, paddingLeft: "1rem" }}>
         <StatItem value="132" label="weight" />
         <StatItem value='5"7' label="height" />
