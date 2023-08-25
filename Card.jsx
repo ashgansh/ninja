@@ -204,19 +204,18 @@ const Card = ({ children }) => {
         // width: "240px",
         // height: "320px",
         borderRadius: "0.5rem",
+        border: "1px solid rgba(255, 255, 255, 1)",
+        background:
+          "linear-gradient(136deg, rgba(234, 255, 254, 0.70) 0%, rgba(205, 201, 241, 0.70) 100%)",
+        boxShadow: "40px 40px 100px 0px rgba(24, 48, 63, 0.20)",
         padding: "1rem",
         display: "flex",
         ustifyContent: "center",
         transformStyle: "preserve-3d",
         transformOrigin: "center",
         perspective: "320px",
-        backgroundImage: `url(${badge})`,
         width: "570px",
         height: "475px",
-        // background:
-        //   "radial-gradient(circle at top left, #BC950B, #FFF732 47%, #FAFF00 81%, #DB950E 94%)",
-        // border: "5px solid",
-        // borderImage: "linear-gradient(to bottom, #FB0000, #FF6D04) 1",
         backgroundSize: "cover",
       }}
     >
@@ -232,12 +231,7 @@ const Card = ({ children }) => {
           transformStyle: "preserve-3d",
         }}
         animate={{
-          background: `radial-gradient(
-              farthest-corner circle at ${glare.x}% ${glare.y}%,
-              rgba(255, 255, 255, 0.7) 10%,
-              rgba(255, 255, 255, 0.5) 24%,
-              rgba(0, 0, 0, 0.8) 82%
-            )`,
+
           opacity: glare.opacity,
         }}
       />
