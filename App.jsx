@@ -30,7 +30,7 @@ const StyledDiv = styled.div`
     /* alignItems: "center" */
   }
 `;
-const MainScore = ({score}) => {
+const MainScore = ({ score }) => {
   // add code to fetch score
   return (
     <div>
@@ -120,7 +120,6 @@ function App() {
   const [session, setSession] = useState(null);
 
   const personId = window.location.pathname.split("/")[1];
-  console.log(personId);
 
   const [profile, setProfile] = useState([]);
 
